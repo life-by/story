@@ -3,131 +3,276 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>অ্যাডমিন প্যানেল — গল্পের আসর</title>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+  <title>JSON Data Editor — গল্পের আসর</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f0f13; --card: #1e1e2e; --accent: #f97316; --text: #f1f0ee; --muted: #9d9ab0;
-      --border: rgba(255,255,255,0.1); --font: 'Hind Siliguri', sans-serif;
+      --bg: #0f0f13; --card: #1e1e2e; --accent: #f97316; --accent-hover: #ea580c;
+      --text: #f1f0ee; --text-muted: #9d9ab0; --border: rgba(255,255,255,0.1);
+      --font: 'Hind Siliguri', sans-serif; --radius: 12px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
-    body { background: var(--bg); color: var(--text); padding: 20px; }
+    body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
     
-    .container { max-width: 800px; margin: 0 auto; }
-    .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; margin-bottom: 20px; }
-    h2 { margin-bottom: 15px; color: var(--accent); }
-    
-    input, select, textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px; font-size: 1rem; }
-    textarea { height: 150px; resize: vertical; }
-    button { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; }
-    
-    #adminPanel { display: none; }
-    #jsonOutput { background: #000; padding: 15px; border-radius: 8px; color: #4ade80; font-family: monospace; white-space: pre-wrap; height: 200px; overflow-y: auto; margin-top: 15px; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { color: var(--accent); }
+    .header p { color: var(--text-muted); font-size: 0.95rem; }
 
-    /* Login Screen */
-    #loginScreen { height: 80vh; display: flex; align-items: center; justify-content: center; }
-    .nav-top { display: flex; justify-content: space-between; margin-bottom: 20px; }
-    .nav-top a { color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 8px 15px; border-radius: 8px; }
+    .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media(min-width: 768px) { .container { grid-template-columns: 1fr 1fr; } }
+
+    .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: var(--radius); }
+    .card h3 { margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; color: var(--accent); display: flex; align-items: center; justify-content: space-between;}
+
+    label { display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px; font-size: 1rem; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { height: 120px; resize: vertical; }
+
+    .btn { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; transition: 0.2s; }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+    .btn-success { background: #10b981; }
+    .btn-success:hover { background: #059669; }
+
+    /* List styling */
+    .story-list { max-height: 300px; overflow-y: auto; padding-right: 5px; }
+    .story-item { background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .story-info strong { display: block; font-size: 1.05rem; }
+    .story-info span { font-size: 0.8rem; color: var(--text-muted); }
+    .actions { display: flex; gap: 8px; }
+    .actions button { padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; width: auto; }
+
+    /* Output Area */
+    #jsonOutput { background: #000; padding: 15px; border-radius: 8px; color: #4ade80; font-family: monospace; white-space: pre-wrap; height: 300px; overflow-y: auto; margin-bottom: 15px; font-size: 0.85rem; border: 1px solid var(--border); }
+    
+    .status-badge { font-size: 0.8rem; padding: 4px 10px; border-radius: 50px; background: rgba(255,255,255,0.1); color: var(--text-muted); }
   </style>
 </head>
 <body>
 
+  <div class="header">
+    <h1>⚙️ ডাটাবেস এডিটর</h1>
+    <p>আপনার গিটহাবের লাইভ stories.json ফাইল এডিট করার টুল</p>
+  </div>
+
   <div class="container">
     
-    <!-- Login Screen -->
-    <div id="loginScreen">
-      <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
-        <h2>🔐 অ্যাডমিন লগইন</h2>
-        <p style="color:var(--muted); margin-bottom:20px;">পাসওয়ার্ড দিন (ডিফল্ট: 1234)</p>
-        <input type="password" id="passInput" placeholder="পাসওয়ার্ড...">
-        <button onclick="login()">লগইন করুন</button>
-        <br><br><a href="index.html" style="color:var(--accent); text-decoration:none;">← ওয়েবসাইটে ফিরুন</a>
-      </div>
-    </div>
-
-    <!-- Admin Panel -->
-    <div id="adminPanel">
-      <div class="nav-top">
-        <h2>⚙️ গল্প ব্যবস্থাপনা</h2>
-        <a href="index.html">🏠 ওয়েবসাইট</a>
+    <!-- LEFT COLUMN: EDITOR FORM -->
+    <div>
+      <div class="card" style="margin-bottom: 20px;">
+        <h3>
+          <span>☁️ গিটহাব কানেকশন</span>
+          <span id="syncStatus" class="status-badge">লোড হচ্ছে...</span>
+        </h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">আপনার লাইভ রিপোজিটরি থেকে ডাটা সরাসরি এখানে নিয়ে আসা হয়েছে।</p>
+        <button class="btn btn-success" onclick="fetchFromGithub()">🔄 আবার ডাটা রিলোড করুন</button>
       </div>
 
       <div class="card">
-        <h3>📝 নতুন গল্প যোগ করুন</h3><br>
-        <input type="text" id="title" placeholder="গল্পের শিরোনাম *">
+        <h3 id="formTitle">📝 নতুন গল্প যোগ করুন</h3>
+        <input type="hidden" id="editId">
+        
+        <label>গল্পের শিরোনাম *</label>
+        <input type="text" id="title" placeholder="যেমন: রাতের অন্ধকারে">
+        
+        <label>ক্যাটাগরি *</label>
         <select id="category">
           <option value="Horror">😱 ভৌতিক (Horror)</option>
           <option value="Love">💕 প্রেম (Love)</option>
           <option value="Islamic">☪️ ইসলামিক (Islamic)</option>
+          <option value="Adventure">⚡ অ্যাডভেঞ্চার (Adventure)</option>
+          <option value="Emotional">😢 আবেগময় (Emotional)</option>
         </select>
-        <input type="text" id="desc" placeholder="সংক্ষিপ্ত বিবরণ *">
-        <input type="url" id="thumb" placeholder="ছবির URL লিংক *">
-        <textarea id="content" placeholder="পুরো গল্প এখানে লিখুন..."></textarea>
-        <button onclick="generateStory()">✅ JSON তৈরি করুন</button>
+        
+        <label>সংক্ষিপ্ত বিবরণ * (কার্ডে দেখাবে)</label>
+        <input type="text" id="desc" placeholder="গল্পের ২/১ লাইনের সারাংশ...">
+        
+        <label>থাম্বনেইল ইমেজ (URL লিংক) *</label>
+        <input type="url" id="thumb" placeholder="https://example.com/image.jpg">
+        
+        <label>পুরো গল্প * (এখানে লিখুন)</label>
+        <textarea id="content" placeholder="প্যারাগ্রাফ করতে এন্টার চাপুন..."></textarea>
+        
+        <div style="display:flex; gap:10px;">
+          <button class="btn" id="saveBtn" onclick="saveStory()">✅ সেভ করুন</button>
+          <button class="btn btn-outline" onclick="resetForm()">🔄 রিসেট</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: LIST & OUTPUT -->
+    <div>
+      <div class="card" style="margin-bottom: 20px;">
+        <h3>📋 সব গল্পের তালিকা</h3>
+        <div class="story-list" id="storyList">
+          <p style="color:var(--text-muted); text-align:center;">কোনো গল্প নেই অথবা লোড হচ্ছে...</p>
+        </div>
       </div>
 
       <div class="card">
         <h3>📄 JSON আউটপুট</h3>
-        <p style="font-size: 0.9rem; color: var(--muted);">নিচের কোডটি কপি করে আপনার ওয়েবসাইটের <b>data/stories.json</b> ফাইলে বসান।</p>
-        <div id="jsonOutput">// ফর্ম পূরণ করে বাটনে ক্লিক করুন...</div>
-        <button onclick="copyJson()" style="background: #3b82f6; margin-top: 10px;">📋 কপি করুন</button>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">নিচের কোডটি কপি করে গিটহাবে আপনার <b>stories.json</b> ফাইলে পেস্ট করে Commit করুন।</p>
+        <div id="jsonOutput">[]</div>
+        <button class="btn" style="background:#3b82f6;" onclick="copyJson()">📋 JSON কপি করুন</button>
       </div>
     </div>
 
   </div>
 
   <script>
-    // Login Logic
-    function login() {
-      const pass = document.getElementById('passInput').value;
-      if(pass === '1234') { // Change password here
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'block';
-      } else {
-        alert('❌ ভুল পাসওয়ার্ড!');
+    let stories = [];
+    // আপনার গিটহাবের র-লিংক (Cache এড়ানোর জন্য পরে টাইমস্ট্যাম্প যুক্ত করা হবে)
+    const GITHUB_RAW_URL = "https://raw.githubusercontent.com/life-by/story/refs/heads/main/stories.json";
+
+    // 1. Fetch from GitHub on Load
+    async function fetchFromGithub() {
+      const statusBadge = document.getElementById('syncStatus');
+      statusBadge.textContent = "⏳ ফেচ করা হচ্ছে...";
+      statusBadge.style.color = "#fbbf24";
+
+      try {
+        // ?t=... ব্যবহার করা হয়েছে যাতে ব্রাউজার পুরানো ক্যাশ করা ডাটা না দেখায়
+        const response = await fetch(GITHUB_RAW_URL + '?t=' + new Date().getTime());
+        if (!response.ok) throw new Error('Network Error');
+        
+        stories = await response.json();
+        renderList();
+        updateOutput();
+        
+        statusBadge.textContent = "✅ কানেক্টেড";
+        statusBadge.style.color = "#4ade80";
+      } catch (error) {
+        console.error("Fetch Error:", error);
+        statusBadge.textContent = "❌ এরর হয়েছে!";
+        statusBadge.style.color = "#ef4444";
+        alert("গিটহাব থেকে ডাটা লোড করা যাচ্ছে না। দয়া করে লিংকটি চেক করুন অথবা ইন্টারনেট কানেকশন যাচাই করুন।");
       }
     }
 
-    // Story Generator
-    let stories = [];
+    // Call fetch immediately when page opens
+    window.onload = fetchFromGithub;
 
-    // Try to load existing stories to append
-    fetch('data/stories.json').then(res => res.json()).then(data => { stories = data; }).catch(e => console.log('No existing JSON found locally'));
-
-    function generateStory() {
-      const title = document.getElementById('title').value;
-      const desc = document.getElementById('desc').value;
-      const content = document.getElementById('content').value;
-      const thumb = document.getElementById('thumb').value;
+    // 2. Save or Update Story
+    function saveStory() {
+      const id = document.getElementById('editId').value;
+      const title = document.getElementById('title').value.trim();
+      const desc = document.getElementById('desc').value.trim();
+      const content = document.getElementById('content').value.trim();
+      const thumb = document.getElementById('thumb').value.trim();
       const cat = document.getElementById('category').value;
 
-      if(!title || !content) return alert('শিরোনাম এবং গল্প লিখতে হবে!');
+      if (!title || !content || !thumb) {
+        alert('⚠️ শিরোনাম, ছবি এবং গল্প পূরণ করা বাধ্যতামূলক!');
+        return;
+      }
 
-      const newStory = {
-        id: Date.now(),
-        title: title,
-        description: desc,
-        content: content,
-        thumbnail: thumb || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600",
-        category: cat,
-        date: new Date().toLocaleDateString('bn-BD'),
-        views: 0
-      };
+      if (id) {
+        // Edit Existing Story
+        const index = stories.findIndex(s => s.id == id);
+        if(index > -1) {
+          stories[index].title = title;
+          stories[index].description = desc;
+          stories[index].content = content;
+          stories[index].thumbnail = thumb;
+          stories[index].category = cat;
+        }
+        document.getElementById('formTitle').textContent = '📝 নতুন গল্প যোগ করুন';
+      } else {
+        // Add New Story
+        const newStory = {
+          id: Date.now(), // Generate unique ID
+          title: title,
+          description: desc,
+          content: content,
+          thumbnail: thumb,
+          category: cat,
+          date: new Intl.DateTimeFormat('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date()),
+          views: Math.floor(Math.random() * 500) + 100 // Random initial views
+        };
+        stories.unshift(newStory); // Add to the top
+      }
 
-      stories.unshift(newStory); // Add new story at the beginning
-      
-      document.getElementById('jsonOutput').textContent = JSON.stringify(stories, null, 2);
-      
-      // Clear form
-      document.getElementById('title').value = '';
-      document.getElementById('desc').value = '';
-      document.getElementById('content').value = '';
+      resetForm();
+      renderList();
+      updateOutput();
     }
 
+    // 3. Edit Story
+    function editStory(id) {
+      const story = stories.find(s => s.id === id);
+      if(!story) return;
+
+      document.getElementById('editId').value = story.id;
+      document.getElementById('title').value = story.title;
+      document.getElementById('desc').value = story.description;
+      document.getElementById('thumb').value = story.thumbnail;
+      document.getElementById('content').value = story.content;
+      document.getElementById('category').value = story.category;
+
+      document.getElementById('formTitle').textContent = '✏️ গল্প এডিট করুন';
+      document.getElementById('saveBtn').textContent = '💾 আপডেট করুন';
+      window.scrollTo(0, 0); // Scroll to top to see the form
+    }
+
+    // 4. Delete Story
+    function deleteStory(id) {
+      if(confirm('আপনি কি নিশ্চিত যে এই গল্পটি মুছে ফেলতে চান?')) {
+        stories = stories.filter(s => s.id !== id);
+        renderList();
+        updateOutput();
+      }
+    }
+
+    // 5. Render Story List
+    function renderList() {
+      const list = document.getElementById('storyList');
+      if (stories.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-muted); text-align:center;">কোনো গল্প নেই।</p>';
+        return;
+      }
+
+      list.innerHTML = stories.map(s => `
+        <div class="story-item">
+          <div class="story-info">
+            <strong>${s.title}</strong>
+            <span>ক্যাটাগরি: ${s.category}</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-outline" onclick="editStory(${s.id})">এডিট</button>
+            <button class="btn btn-danger" onclick="deleteStory(${s.id})">ডিলেট</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 6. Update JSON Output
+    function updateOutput() {
+      document.getElementById('jsonOutput').textContent = JSON.stringify(stories, null, 2);
+    }
+
+    // 7. Reset Form
+    function resetForm() {
+      document.getElementById('editId').value = '';
+      document.getElementById('title').value = '';
+      document.getElementById('desc').value = '';
+      document.getElementById('thumb').value = '';
+      document.getElementById('content').value = '';
+      document.getElementById('category').value = 'Horror';
+      
+      document.getElementById('formTitle').textContent = '📝 নতুন গল্প যোগ করুন';
+      document.getElementById('saveBtn').textContent = '✅ সেভ করুন';
+    }
+
+    // 8. Copy JSON to Clipboard
     function copyJson() {
       const text = document.getElementById('jsonOutput').textContent;
+      if (text === '[]') return alert('⚠️ কপি করার মতো কোনো ডাটা নেই!');
+      
       navigator.clipboard.writeText(text);
-      alert('✅ JSON কপি হয়েছে! এবার আপনার ডাটাবেস আপডেট করুন।');
+      alert('✅ JSON কোড কপি হয়েছে!\n\nএবার গিটহাবে আপনার stories.json ফাইলটি ওপেন করে পেন্সিল আইকনে (Edit) ক্লিক করুন, আগের সব লেখা মুছে দিয়ে এটি পেস্ট করুন এবং Commit changes এ ক্লিক করুন।');
     }
   </script>
 </body>
