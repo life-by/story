@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>অ্যাডমিন প্যানেল — গল্পের আসর</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f13; --card: #1e1e2e; --accent: #f97316; --text: #f1f0ee; --muted: #9d9ab0;
+      --border: rgba(255,255,255,0.1); --font: 'Hind Siliguri', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+    body { background: var(--bg); color: var(--text); padding: 20px; }
+    
+    .container { max-width: 800px; margin: 0 auto; }
+    .card { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 12px; margin-bottom: 20px; }
+    h2 { margin-bottom: 15px; color: var(--accent); }
+    
+    input, select, textarea { width: 100%; padding: 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px; font-size: 1rem; }
+    textarea { height: 150px; resize: vertical; }
+    button { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; width: 100%; }
+    
+    #adminPanel { display: none; }
+    #jsonOutput { background: #000; padding: 15px; border-radius: 8px; color: #4ade80; font-family: monospace; white-space: pre-wrap; height: 200px; overflow-y: auto; margin-top: 15px; }
+
+    /* Login Screen */
+    #loginScreen { height: 80vh; display: flex; align-items: center; justify-content: center; }
+    .nav-top { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .nav-top a { color: var(--muted); text-decoration: none; border: 1px solid var(--border); padding: 8px 15px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Login Screen -->
+    <div id="loginScreen">
+      <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+        <h2>🔐 অ্যাডমিন লগইন</h2>
+        <p style="color:var(--muted); margin-bottom:20px;">পাসওয়ার্ড দিন (ডিফল্ট: 1234)</p>
+        <input type="password" id="passInput" placeholder="পাসওয়ার্ড...">
+        <button onclick="login()">লগইন করুন</button>
+        <br><br><a href="index.html" style="color:var(--accent); text-decoration:none;">← ওয়েবসাইটে ফিরুন</a>
+      </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel">
+      <div class="nav-top">
+        <h2>⚙️ গল্প ব্যবস্থাপনা</h2>
+        <a href="index.html">🏠 ওয়েবসাইট</a>
+      </div>
+
+      <div class="card">
+        <h3>📝 নতুন গল্প যোগ করুন</h3><br>
+        <input type="text" id="title" placeholder="গল্পের শিরোনাম *">
+        <select id="category">
+          <option value="Horror">😱 ভৌতিক (Horror)</option>
+          <option value="Love">💕 প্রেম (Love)</option>
+          <option value="Islamic">☪️ ইসলামিক (Islamic)</option>
+        </select>
+        <input type="text" id="desc" placeholder="সংক্ষিপ্ত বিবরণ *">
+        <input type="url" id="thumb" placeholder="ছবির URL লিংক *">
+        <textarea id="content" placeholder="পুরো গল্প এখানে লিখুন..."></textarea>
+        <button onclick="generateStory()">✅ JSON তৈরি করুন</button>
+      </div>
+
+      <div class="card">
+        <h3>📄 JSON আউটপুট</h3>
+        <p style="font-size: 0.9rem; color: var(--muted);">নিচের কোডটি কপি করে আপনার ওয়েবসাইটের <b>data/stories.json</b> ফাইলে বসান।</p>
+        <div id="jsonOutput">// ফর্ম পূরণ করে বাটনে ক্লিক করুন...</div>
+        <button onclick="copyJson()" style="background: #3b82f6; margin-top: 10px;">📋 কপি করুন</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Login Logic
+    function login() {
+      const pass = document.getElementById('passInput').value;
+      if(pass === '1234') { // Change password here
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+      } else {
+        alert('❌ ভুল পাসওয়ার্ড!');
+      }
+    }
+
+    // Story Generator
+    let stories = [];
+
+    // Try to load existing stories to append
+    fetch('data/stories.json').then(res => res.json()).then(data => { stories = data; }).catch(e => console.log('No existing JSON found locally'));
+
+    function generateStory() {
+      const title = document.getElementById('title').value;
+      const desc = document.getElementById('desc').value;
+      const content = document.getElementById('content').value;
+      const thumb = document.getElementById('thumb').value;
+      const cat = document.getElementById('category').value;
+
+      if(!title || !content) return alert('শিরোনাম এবং গল্প লিখতে হবে!');
+
+      const newStory = {
+        id: Date.now(),
+        title: title,
+        description: desc,
+        content: content,
+        thumbnail: thumb || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600",
+        category: cat,
+        date: new Date().toLocaleDateString('bn-BD'),
+        views: 0
+      };
+
+      stories.unshift(newStory); // Add new story at the beginning
+      
+      document.getElementById('jsonOutput').textContent = JSON.stringify(stories, null, 2);
+      
+      // Clear form
+      document.getElementById('title').value = '';
+      document.getElementById('desc').value = '';
+      document.getElementById('content').value = '';
+    }
+
+    function copyJson() {
+      const text = document.getElementById('jsonOutput').textContent;
+      navigator.clipboard.writeText(text);
+      alert('✅ JSON কপি হয়েছে! এবার আপনার ডাটাবেস আপডেট করুন।');
+    }
+  </script>
+</body>
+</html>

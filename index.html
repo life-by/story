@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>গল্পের আসর — বাংলা গল্পের ওয়েবসাইট</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== CSS VARIABLES & BASE ===== */
+    :root {
+      --bg-primary: #0f0f13; --bg-secondary: #1a1a24; --bg-card: #1e1e2e; --bg-card-hover: #252538;
+      --accent: #f97316; --accent-glow: rgba(249, 115, 22, 0.3); --text-primary: #f1f0ee;
+      --text-secondary: #9d9ab0; --text-muted: #6b6880; --border: rgba(255, 255, 255, 0.08);
+      --font-bangla: 'Hind Siliguri', sans-serif; --font-display: 'Kalam', cursive;
+      --radius: 16px; --radius-sm: 8px; --transition: all 0.3s ease;
+    }
+    [data-theme="light"] {
+      --bg-primary: #faf9f7; --bg-secondary: #f0ede8; --bg-card: #ffffff; --bg-card-hover: #fff8f3;
+      --text-primary: #1a1714; --text-secondary: #5c5750; --text-muted: #9c9690;
+      --border: rgba(0, 0, 0, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-bangla); background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; transition: background 0.4s, color 0.4s; }
+    a { text-decoration: none; color: inherit; } img { max-width: 100%; display: block; }
+    button { cursor: pointer; font-family: var(--font-bangla); border: none; background: transparent; }
+    
+    /* ===== NAVBAR ===== */
+    .navbar { position: sticky; top: 0; z-index: 1000; background: rgba(15,15,19,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 24px; }
+    [data-theme="light"] .navbar { background: rgba(250,249,247,0.85); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px;}
+    .nav-logo span { color: var(--text-primary); }
+    .nav-links { display: flex; gap: 10px; }
+    .nav-link { padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.95rem; color: var(--text-secondary); transition: var(--transition); font-weight: 500; }
+    .nav-link:hover, .nav-link.active { background: var(--accent-glow); color: var(--accent); }
+    .nav-actions { display: flex; gap: 10px; }
+    .btn-theme, .hamburger { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); display: flex; align-items: center; justify-content: center; }
+    .hamburger { display: none; border-radius: var(--radius-sm); }
+
+    /* ===== HERO & SEARCH (HOME VIEW) ===== */
+    .hero { text-align: center; padding: 60px 24px; position: relative; }
+    .hero-badge { display: inline-block; padding: 6px 16px; background: var(--accent-glow); border-radius: 50px; color: var(--accent); font-size: 0.85rem; margin-bottom: 20px; }
+    .hero h1 { font-family: var(--font-display); font-size: 2.8rem; margin-bottom: 16px; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--text-secondary); max-width: 600px; margin: 0 auto 30px; }
+    
+    .search-card { max-width: 800px; margin: -20px auto 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); position: relative; z-index: 10;}
+    .search-input { width: 100%; padding: 12px 16px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); margin-bottom: 16px; font-family: var(--font-bangla); }
+    .filter-tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+    .filter-tab { padding: 8px 16px; border-radius: 50px; border: 1px solid var(--border); color: var(--text-secondary); transition: var(--transition); }
+    .filter-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* ===== GRID & CARDS ===== */
+    .main-content { max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; }
+    .section-title { font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .section-title::before { content: ''; width: 4px; height: 20px; background: var(--accent); border-radius: 2px; }
+    
+    .stories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+    .story-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: var(--transition); cursor: pointer; }
+    .story-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+    .card-thumb-wrap { position: relative; height: 200px; overflow: hidden; }
+    .card-thumb { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+    .story-card:hover .card-thumb { transform: scale(1.05); }
+    .card-category { position: absolute; top: 12px; left: 12px; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; background: #831843; color: #f9a8d4; }
+    .card-body { padding: 20px; }
+    .card-title { font-size: 1.1rem; margin-bottom: 10px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 15px; }
+    .card-read-btn { color: var(--accent); font-weight: 600; }
+
+    /* ===== STORY VIEW ===== */
+    .story-hero { height: 350px; position: relative; overflow: hidden; }
+    .story-hero img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.4); }
+    .story-hero-content { position: absolute; bottom: 30px; left: 0; right: 0; padding: 0 24px; max-width: 900px; margin: 0 auto; color: white; }
+    .story-page-title { font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 10px; line-height: 1.2; }
+    .story-page-meta { display: flex; gap: 20px; font-size: 0.9rem; color: #ccc; }
+    
+    .story-content-wrap { max-width: 900px; margin: 0 auto; padding: 30px 24px; }
+    .story-actions { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; }
+    .btn-action { padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); transition: var(--transition); }
+    .btn-action:hover { border-color: var(--accent); color: var(--accent); }
+    .story-body { font-size: 1.1rem; line-height: 1.9; white-space: pre-line; }
+
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(50px); background: var(--accent); color: white; padding: 12px 24px; border-radius: 50px; opacity: 0; transition: all 0.3s; z-index: 9999; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ===== MOBILE RESPONSIVE (APP LIKE) ===== */
+    @media (max-width: 768px) {
+      .nav-links { display: none; flex-direction: column; position: fixed; top: 64px; left: 0; right: 0; background: var(--bg-secondary); padding: 20px; gap: 10px; border-bottom: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+      .nav-links.open { display: flex; }
+      .nav-link { background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
+      .hamburger { display: flex; }
+      
+      .hero h1 { font-size: 2rem; }
+      .filter-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+      .filter-tabs::-webkit-scrollbar { display: none; }
+      .filter-tab { flex-shrink: 0; }
+      
+      .story-hero { height: 250px; }
+      .story-page-title { font-size: 1.8rem; }
+      .story-actions { flex-direction: column; gap: 15px; }
+      .story-action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .btn-action { text-align: center; width: 100%; }
+      .story-page-meta { flex-direction: column; gap: 5px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">📖 <span>গল্পের আসর</span></a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" class="nav-link active">🏠 হোম</a>
+        <a href="admin.html" class="nav-link">⚙️ অ্যাডমিন প্যানেল</a>
+      </div>
+      <div class="nav-actions">
+        <button class="btn-theme" onclick="toggleTheme()">☀️</button>
+        <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= HOME VIEW ================= -->
+  <div id="home-view">
+    <section class="hero">
+      <div class="hero-badge">✨ সেরা বাংলা গল্পের সংকলন</div>
+      <h1>গল্পের <span>জাদুর</span> দুনিয়ায় স্বাগতম</h1>
+      <p>ভৌতিক, প্রেম, ইসলামিক ও আবেগময় গল্পের এক অনন্য সংগ্রহ।</p>
+    </section>
+
+    <div class="search-card">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 গল্পের নাম বা বিষয় খুঁজুন...">
+      <div class="filter-tabs" id="filterTabs">
+        <button class="filter-tab active" onclick="filterCategory('all')">📚 সব গল্প</button>
+        <button class="filter-tab" onclick="filterCategory('Horror')">😱 ভৌতিক</button>
+        <button class="filter-tab" onclick="filterCategory('Love')">💕 প্রেম</button>
+        <button class="filter-tab" onclick="filterCategory('Islamic')">☪️ ইসলামিক</button>
+      </div>
+    </div>
+
+    <main class="main-content">
+      <h2 class="section-title">সব গল্প</h2>
+      <div class="stories-grid" id="storiesGrid">
+        <!-- Stories will load here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= STORY VIEW ================= -->
+  <div id="story-view" style="display: none;">
+    <div class="story-hero">
+      <img id="s-img" src="" alt="">
+      <div class="story-hero-content">
+        <h1 class="story-page-title" id="s-title">লোড হচ্ছে...</h1>
+        <div class="story-page-meta">
+          <span id="s-date">📅 --</span>
+          <span id="s-views">👁 -- বার পড়া হয়েছে</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="story-content-wrap">
+      <div class="story-actions">
+        <a href="index.html" style="color:var(--text-muted);">← ফিরে যান</a>
+        <div class="story-action-btns">
+          <button class="btn-action" onclick="copyLink()">🔗 শেয়ার</button>
+          <button class="btn-action" id="favBtn" onclick="toggleFav()">🤍 পছন্দ</button>
+        </div>
+      </div>
+      <div class="story-body" id="s-body"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ===== FALLBACK DATA (For local testing without server) =====
+    const fallbackData = [
+      { id: 1, title: "রাতের অন্ধকারে", description: "একটি পুরনো বাড়িতে রহস্যময় শব্দ...", content: "রাত তখন গভীর। রাহেলা একা বসে আছে পুরনো বাড়ির দোতলায়।\n\nহঠাৎ নিচ থেকে একটা শব্দ আসে। মড়মড়। পায়ের শব্দ। কিন্তু বাড়িতে সে ছাড়া আর কেউ নেই।\n\nধীরে ধীরে সিঁড়ির দিকে এগিয়ে যায় সে...", thumbnail: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=600", category: "Horror", date: "২০২৪-০১-১৫", views: 1243 },
+      { id: 2, title: "প্রথম বৃষ্টির মতো", description: "দশ বছর পর হঠাৎ দেখা হয় দুই পুরনো বন্ধুর...", content: "বৃষ্টি পড়ছিল সেদিন। ঠিক যেমন পড়েছিল সেই দিনটিতে, দশ বছর আগে।\n\nআরিফ বাস স্টপে দাঁড়িয়ে ভিজছিল। হঠাৎ পাশ থেকে একটা ছাতা এগিয়ে আসে। 'আরিফ?' চেনা গলা...", thumbnail: "https://images.unsplash.com/photo-1515462277126-2dd0469f0ba2?w=600", category: "Love", date: "২০২৪-০২-১০", views: 2876 }
+    ];
+
+    let allStories = [];
+    let currentCategory = 'all';
+    let currentId = null;
+
+    // Theme logic
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    }
+
+    // App Initialization (SPA Router)
+    async function init() {
+      try {
+        const res = await fetch('data/stories.json');
+        allStories = res.ok ? await res.json() : fallbackData;
+      } catch(e) {
+        allStories = fallbackData; // Fallback if run locally
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      currentId = params.get('id');
+
+      if (currentId) {
+        document.getElementById('home-view').style.display = 'none';
+        document.getElementById('story-view').style.display = 'block';
+        renderStory(parseInt(currentId));
+      } else {
+        document.getElementById('home-view').style.display = 'block';
+        document.getElementById('story-view').style.display = 'none';
+        renderGrid(allStories);
+      }
+    }
+
+    // Render Home Grid
+    function renderGrid(stories) {
+      const grid = document.getElementById('storiesGrid');
+      grid.innerHTML = stories.map(s => `
+        <div class="story-card" onclick="window.location.href='index.html?id=${s.id}'">
+          <div class="card-thumb-wrap">
+            <img class="card-thumb" src="${s.thumbnail}">
+            <span class="card-category">${s.category}</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-title">${s.title}</h3>
+            <p style="font-size:0.9rem; color:var(--text-secondary);">${s.description}</p>
+            <div class="card-meta">
+              <span>📅 ${s.date}</span>
+              <span class="card-read-btn">পড়ুন →</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Filter & Search
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      applyFilters();
+    }
+
+    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+
+    function applyFilters() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allStories.filter(s => {
+        const matchCat = currentCategory === 'all' || s.category === currentCategory;
+        const matchSearch = s.title.toLowerCase().includes(q);
+        return matchCat && matchSearch;
+      });
+      renderGrid(filtered);
+    }
+
+    // Render Single Story
+    function renderStory(id) {
+      const s = allStories.find(x => x.id === id);
+      if(!s) return window.location.href = 'index.html';
+      
+      document.getElementById('s-img').src = s.thumbnail;
+      document.getElementById('s-title').textContent = s.title;
+      document.getElementById('s-date').textContent = `📅 ` + s.date;
+      document.getElementById('s-views').textContent = `👁 ` + (s.views + 1) + ` বার পড়া হয়েছে`;
+      document.getElementById('s-body').textContent = s.content;
+      
+      // Update Favorite Button State
+      const favs = JSON.parse(localStorage.getItem('favs') || '[]');
+      document.getElementById('favBtn').innerHTML = favs.includes(id) ? '❤️ পছন্দে আছে' : '🤍 পছন্দ করুন';
+    }
+
+    function toggleFav() {
+      const id = parseInt(currentId);
+      let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+      if(favs.includes(id)) {
+        favs = favs.filter(x => x !== id);
+        document.getElementById('favBtn').innerHTML = '🤍 পছন্দ করুন';
+        showToast('পছন্দ থেকে সরানো হয়েছে');
+      } else {
+        favs.push(id);
+        document.getElementById('favBtn').innerHTML = '❤️ পছন্দে আছে';
+        showToast('❤️ পছন্দে যোগ করা হয়েছে');
+      }
+      localStorage.setItem('favs', JSON.stringify(favs));
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href);
+      showToast('🔗 লিংক কপি করা হয়েছে!');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // Start App
+    init();
+  </script>
+</body>
+</html>
